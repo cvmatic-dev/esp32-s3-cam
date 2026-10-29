@@ -5,10 +5,11 @@
 CONFIG_IDF_TARGET="esp32s3"
 
 # ---- Flash ------------------------------------------------------------------
-# 8MB is safe for N8R8 and N16R8 modules. On N16R8 you may switch to 16MB.
+# This board is an N16R8 module: 16 MB flash (boya) + 8 MB octal PSRAM.
+# On an N8R8 module use CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y and shrink partitions.csv.
 CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
 CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
-CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 
