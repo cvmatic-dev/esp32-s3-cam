@@ -7,7 +7,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-ESP_IDF_VERSION_PIN="${ESP_IDF_VERSION_PIN:-v5.5.2}"
+ESP_IDF_VERSION_PIN="${ESP_IDF_VERSION_PIN:-v6.0.3}"
 IDF_PATH="${IDF_PATH:-$HOME/esp/esp-idf-${ESP_IDF_VERSION_PIN}}"
 NO_SUDO=0; [ "${1:-}" = "--no-sudo" ] && NO_SUDO=1
 
