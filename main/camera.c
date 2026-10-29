@@ -19,6 +19,18 @@ static const char *TAG = "camera";
 #define APP_FRAMESIZE FRAMESIZE_SVGA
 #endif
 
+#ifdef CONFIG_APP_WB_MODE_SUNNY
+#define APP_WB_MODE 1
+#elif defined(CONFIG_APP_WB_MODE_CLOUDY)
+#define APP_WB_MODE 2
+#elif defined(CONFIG_APP_WB_MODE_OFFICE)
+#define APP_WB_MODE 3
+#elif defined(CONFIG_APP_WB_MODE_HOME)
+#define APP_WB_MODE 4
+#else
+#define APP_WB_MODE 0 /* auto */
+#endif
+
 esp_err_t app_camera_init(void)
 {
     const camera_config_t cfg = {
@@ -63,7 +75,20 @@ esp_err_t app_camera_init(void)
         ESP_LOGE(TAG, "unexpected sensor PID 0x%04x (want 0x%04x)", s->id.PID, OV5640_PID);
         return ESP_ERR_NOT_FOUND;
     }
-    ESP_LOGI(TAG, "OV5640 ready, framesize=%d quality=%d", (int)APP_FRAMESIZE, CONFIG_APP_JPEG_QUALITY);
+
+    /* The default register table already enables these; re-asserting makes the
+     * intent explicit and lets APP_WB_MODE pin a fixed white balance (mode != 0
+     * switches 0x3406 to manual AWB gain) when auto drifts to a colour cast. */
+    s->set_gain_ctrl(s, 1);
+    s->set_exposure_ctrl(s, 1);
+    s->set_aec2(s, 1);
+    s->set_awb_gain(s, 1);
+    if (s->set_wb_mode(s, APP_WB_MODE) != 0) {
+        ESP_LOGW(TAG, "set_wb_mode(%d) failed", APP_WB_MODE);
+    }
+
+    ESP_LOGI(TAG, "OV5640 ready, framesize=%d quality=%d wb_mode=%d",
+             (int)APP_FRAMESIZE, CONFIG_APP_JPEG_QUALITY, APP_WB_MODE);
     return ESP_OK;
 }
 

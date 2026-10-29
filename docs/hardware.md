@@ -43,5 +43,12 @@
   8 MB, so the bootloader warns *"Detected size(16384k) larger than the size
   in the binary image header(8192k)"*. Switch to 16 MB (and grow the partition
   table) to use the full flash and make the warning go away.
-- **2026-10-29** — Default image is underexposed with a magenta/purple AWB
-  cast (see image-quality tuning in `main/camera.c`); camera path itself works.
+- **2026-10-29** — **Camera images are magenta/purple-tinted and dark, and it
+  is not an AWB software fault.** Evidence: the sensor's built-in colour-bar
+  test pattern renders a near-neutral white bar (so the ISP/colour matrix is
+  fine); all five OV5640 white-balance modes were applied (register readback
+  confirmed `0x3406` 0→1 and R/B gains `0x3400`/`0x3404` changing) yet every
+  mode still shows the cast. Most likely cause is the scene/optics: magenta
+  ambient (RGB LED) lighting, or a missing/ineffective IR-cut filter.
+  **Needs a human:** aim the camera at white paper under neutral white light
+  (or check the lens for an IR-cut filter) to tell the two apart.

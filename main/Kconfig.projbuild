@@ -22,6 +22,24 @@ menu "App (esp32s3-cam)"
         range 4 63
         default 12
 
+    choice APP_WB_MODE
+        prompt "White balance mode"
+        default APP_WB_MODE_AUTO
+        help
+            OV5640 auto white balance (mode 0) can settle on a colour cast in
+            dim or mixed indoor light. Pick a fixed mode to test alternatives.
+        config APP_WB_MODE_AUTO
+            bool "Auto"
+        config APP_WB_MODE_SUNNY
+            bool "Sunny"
+        config APP_WB_MODE_CLOUDY
+            bool "Cloudy"
+        config APP_WB_MODE_OFFICE
+            bool "Office (fluorescent)"
+        config APP_WB_MODE_HOME
+            bool "Home (warm / incandescent)"
+    endchoice
+
     config APP_SELFTEST_FRAMES
         int "Frames captured by the boot self-test"
         range 1 100
@@ -30,7 +48,7 @@ menu "App (esp32s3-cam)"
     config APP_WARMUP_FRAMES
         int "Frames discarded before measuring (AEC/AWB settle)"
         range 0 30
-        default 3
+        default 10
 
     config APP_REQUIRE_SD
         bool "Self-test fails if the SD card does not mount"
