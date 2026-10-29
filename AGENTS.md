@@ -18,15 +18,24 @@ make test        # build -> flash -> reset -> self-test; exit 0 = PASS
 | 3 | port/toolchain problem | `make ports`; if nothing listed → **ask the human** (cable/board) |
 | other | build or flash error | build: `build/last_build.log`; flash: `build/last_flash.log` |
 
-Other targets: `make build`, `make flash`, `make observe` (reset + watch
-without reflashing), `make ports`, `make reconfigure`, `make size`.
+Other targets: `make build`, `make flash`, `make capture` (build+flash+run the
+capture/stream utility, see below), `make observe` (reset + watch without
+reflashing), `make ports`, `make reconfigure`, `make size`.
 Knobs: `TIMEOUT=60`, `SKIP_BUILD=1`, `APP_ONLY=1`, `QUIET=1` before `make test`
 or `scripts/test_hw.sh`.
+
+**Two app modes** (`CONFIG_APP_MODE`, default self-test): `make test` runs the
+boot self-test; `make capture` runs the capture/stream utility (720p grayscale
+fixed-exposure recording to SD + a WiFi SoftAP MJPEG stream — `main/capture.c`,
+`stream.c`, `wifi_ap.c`). Capture mode is long-running: it prints `@@RESULT`
+then keeps streaming, so `make capture` returns as soon as `@@RESULT` appears.
 
 **Look at the picture.** Every self-test dumps its last frame over serial;
 it lands in `build/hw/images/selftest_last.jpg`. Open it with your image
 viewing tool after any camera-related change — "frames arrived" is not the
 same as "image is correct" (check exposure, colour, orientation, tearing).
+Capture mode does *not* dump over serial; verify it from the `@@STATS` line
+and, for the picture, the MJPEG stream (a phone on the SoftAP) or the SD file.
 
 Never run `idf.py monitor` (interactive, never exits). Use
 `tools/esp_monitor.py` — see `--help` (`--until REGEX`, `--no-reset`,
@@ -41,9 +50,9 @@ Keep them stable; add new keys rather than renaming. Format:
 | Marker | When |
 |---|---|
 | `@@BOOT fw= ver= idf=` | first line of app_main |
-| `@@CHECK <subsystem>=OK\|FAIL ...` | one per subsystem (psram, sd, camera) |
-| `@@FRAME i= w= h= len= jpeg=OK\|BAD` | each captured frame |
-| `@@STATS ...` / `@@HEAP ...` | after the test |
+| `@@CHECK <subsystem>=OK\|FAIL ...` | one per subsystem (psram, sd, camera, exposure, wifi, stream) |
+| `@@FRAME i= w= h= len= jpeg=OK\|BAD` | each captured frame (self-test) |
+| `@@STATS ...` / `@@HEAP ...` | after the test; capture mode repeats `@@STATS` every 5 s |
 | `@@RESULT PASS` / `@@RESULT FAIL reason=<token>` | exactly once per boot; ends the test |
 | `@@IMG_BEGIN/@@IMG:/@@IMG_END` | binary dump (see `main/frame_dump.h`) |
 
@@ -53,13 +62,17 @@ a long-running mode, print `@@RESULT` before entering the loop.
 ## Layout
 
 ```
-main/main.c          app_main + boot self-test (emits markers)
-main/camera.[ch]     OV5640 init via espressif/esp32-camera
+main/main.c          app_main + boot self-test (emits markers); dispatches on APP_MODE
+main/camera.[ch]     OV5640 init via espressif/esp32-camera (self-test)
+main/capture.[ch]    capture utility: 720p grey, manual exposure, SD, frame bus
+main/stream.[ch]     HTTP MJPEG server ("/" viewer, "/stream")
+main/wifi_ap.[ch]    SoftAP bring-up
 main/sdcard.[ch]     SDMMC 1-bit mount at /sdcard (never formats)
 main/frame_dump.[ch] base64 frame dump over the console
 main/board_pins.h    ALL pin numbers live here and only here
-main/Kconfig.projbuild  app options (frame size, quality, ...)
+main/Kconfig.projbuild  app options (mode, frame size, quality, wifi, ...)
 sdkconfig.defaults   config source of truth (sdkconfig is generated)
+scripts/sdkconfig.capture  extra defaults for `make capture`
 main/idf_component.yml + dependencies.lock   pinned managed components
 tools/esp_monitor.py non-interactive monitor / verdict / image extraction
 scripts/*.sh         build / flash / test_hw / env / setup_host

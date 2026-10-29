@@ -1,7 +1,21 @@
 menu "App (esp32s3-cam)"
 
+    choice APP_MODE
+        prompt "Application mode"
+        default APP_MODE_SELFTEST
+        help
+            SELFTEST (default): boot self-test driven by `make test`.
+            CAPTURE: fixed-exposure grayscale capture to SD + WiFi MJPEG stream.
+        config APP_MODE_SELFTEST
+            bool "Boot self-test"
+        config APP_MODE_CAPTURE
+            bool "Capture + WiFi MJPEG utility"
+    endchoice
+
+    # ---- Boot self-test (always defined so camera.c compiles in any mode) ----
+
     choice APP_FRAMESIZE
-        prompt "Capture frame size (JPEG)"
+        prompt "Self-test capture frame size (JPEG)"
         default APP_FRAMESIZE_SVGA
         config APP_FRAMESIZE_QVGA
             bool "QVGA 320x240"
@@ -18,12 +32,12 @@ menu "App (esp32s3-cam)"
     endchoice
 
     config APP_JPEG_QUALITY
-        int "JPEG quality (0-63, lower = better)"
+        int "Self-test JPEG quality (0-63, lower = better)"
         range 4 63
         default 12
 
     choice APP_WB_MODE
-        prompt "White balance mode"
+        prompt "Self-test white balance mode"
         default APP_WB_MODE_AUTO
         help
             OV5640 auto white balance (mode 0) can settle on a colour cast in
@@ -64,5 +78,81 @@ menu "App (esp32s3-cam)"
         help
             Lets a coding agent on the host see the actual image:
             tools/esp_monitor.py --save-images <dir> decodes it to a .jpg.
+
+    # ---- Capture + stream utility -------------------------------------------
+
+    menu "Capture + stream utility (used when APP_MODE_CAPTURE is selected)"
+
+        choice APP_CAPTURE_FRAMESIZE
+            prompt "Capture framesize (starts at 720p)"
+            default APP_CAPTURE_FRAMESIZE_HD
+            help
+                Capture starts here; with APP_CAPTURE_AUTOSHRINK it steps down
+                to smaller sizes until APP_CAPTURE_FPS_TARGET is reached.
+            config APP_CAPTURE_FRAMESIZE_HD
+                bool "HD 1280x720 (720p, 16:9)"
+            config APP_CAPTURE_FRAMESIZE_SVGA
+                bool "SVGA 800x600 (4:3)"
+            config APP_CAPTURE_FRAMESIZE_VGA
+                bool "VGA 640x480 (4:3)"
+            config APP_CAPTURE_FRAMESIZE_QVGA
+                bool "QVGA 320x240 (4:3)"
+        endchoice
+
+        config APP_CAPTURE_FPS_TARGET
+            int "Target capture fps"
+            range 1 60
+            default 25
+
+        config APP_CAPTURE_EXPOSURE_NUM
+            int "Manual exposure numerator (seconds)"
+            range 1 1000
+            default 1
+
+        config APP_CAPTURE_EXPOSURE_DEN
+            int "Manual exposure denominator (1/32 s -> numerator 1, this 32)"
+            range 1 100000
+            default 32
+
+        config APP_CAPTURE_JPEG_QUALITY
+            int "Grayscale JPEG quality (4-63, lower = better)"
+            range 4 63
+            default 12
+
+        config APP_CAPTURE_AUTOSHRINK
+            bool "Shrink framesize if the target fps cannot be reached"
+            default y
+
+        config APP_CAPTURE_DISABLE_DENOISE
+            bool "Disable sensor denoise"
+            default y
+
+        config APP_CAPTURE_SAVE_SD
+            bool "Save frames to SD card"
+            default y
+
+        config APP_CAPTURE_STREAM_FPS
+            int "MJPEG stream fps per client"
+            range 1 30
+            default 5
+
+        config APP_WIFI_SSID
+            string "SoftAP SSID"
+            default "esp32cam"
+
+        config APP_WIFI_PASSWORD
+            string "SoftAP password (>=8 chars; empty = open network)"
+            default "esp32cam-stream"
+
+        config APP_WIFI_CHANNEL
+            int "SoftAP channel"
+            range 1 13
+            default 1
+
+        config APP_WIFI_MAX_CONN
+            int "SoftAP maximum stations"
+            range 1 8
+            default 2
+    endmenu
 
 endmenu

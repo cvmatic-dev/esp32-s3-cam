@@ -4,6 +4,7 @@
       "Bash(make build)",
       "Bash(make flash)",
       "Bash(make test)",
+      "Bash(make capture)",
       "Bash(make observe)",
       "Bash(make ports)",
       "Bash(make reconfigure)",

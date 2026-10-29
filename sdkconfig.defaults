@@ -48,3 +48,7 @@ CONFIG_FATFS_MAX_LFN=255
 # ---- Camera driver (espressif/esp32-camera) ---------------------------------
 CONFIG_OV5640_SUPPORT=y
 CONFIG_CAMERA_CORE0=y
+
+# Application mode lives in Kconfig ("App (esp32s3-cam) > Application mode").
+# Default is the boot self-test; `make capture` selects the capture utility.
+

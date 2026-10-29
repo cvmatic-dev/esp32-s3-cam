@@ -1,0 +1,4 @@
+# Extra sdkconfig defaults for the capture/stream utility.
+# Applied by `make capture` (via SDKCONFIG_DEFAULTS), over the base
+# sdkconfig.defaults, so the boot self-test stays the default mode.
+CONFIG_APP_MODE_CAPTURE=y

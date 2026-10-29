@@ -1,14 +1,18 @@
 /*
- * esp32s3-cam — boot self-test + capture skeleton.
+ * esp32s3-cam — boot self-test + capture/stream utility.
  *
  * Every boot prints machine-readable markers (see AGENTS.md "Log protocol"):
  *   @@BOOT    firmware/IDF version
- *   @@CHECK   one line per subsystem (psram, sd, camera)
- *   @@FRAME   one line per captured frame
+ *   @@CHECK   one line per subsystem (psram, sd, camera, wifi, ...)
+ *   @@FRAME   one line per captured frame (self-test)
  *   @@STATS   fps / sizes
  *   @@HEAP    heap after the test
  *   @@RESULT  PASS | FAIL reason=<token>
  * tools/esp_monitor.py waits for @@RESULT and turns it into an exit code.
+ *
+ * CONFIG_APP_MODE_SELFTEST (default) runs the boot self-test.
+ * CONFIG_APP_MODE_CAPTURE runs the fixed-exposure grayscale capture utility:
+ * SD recording + WiFi SoftAP MJPEG stream (see capture.c / stream.c).
  */
 #include <stdio.h>
 #include <stdint.h>
@@ -31,8 +35,15 @@
 #include "sdcard.h"
 #include "frame_dump.h"
 
+#if CONFIG_APP_MODE_CAPTURE
+#include "capture.h"
+#include "stream.h"
+#include "wifi_ap.h"
+#endif
+
 static const char *TAG = "app";
 
+#if !CONFIG_APP_MODE_CAPTURE
 static void result_fail(const char *reason)
 {
     printf("@@RESULT FAIL reason=%s\n", reason);
@@ -129,6 +140,40 @@ static bool run_selftest(void)
 #endif
     return true;
 }
+#else /* CONFIG_APP_MODE_CAPTURE */
+
+static void run_capture_mode(void)
+{
+    bool sd_ok = (app_sd_mount() == ESP_OK);
+    printf("@@CHECK sd=%s size_mb=%" PRIu64 "\n", sd_ok ? "OK" : "FAIL", app_sd_size_mb());
+
+    if (app_capture_start() != ESP_OK) {
+        printf("@@RESULT FAIL reason=capture_init\n");
+        fflush(stdout);
+        return;
+    }
+    if (app_wifi_ap_start() != ESP_OK) {
+        printf("@@CHECK wifi=FAIL\n");
+        printf("@@RESULT FAIL reason=wifi\n");
+        fflush(stdout);
+        return;
+    }
+    printf("@@CHECK wifi=OK ssid=%s ip=%s ch=%d\n", CONFIG_APP_WIFI_SSID,
+           app_wifi_ap_ip(), CONFIG_APP_WIFI_CHANNEL);
+
+    if (app_stream_start() != ESP_OK) {
+        printf("@@CHECK stream=FAIL\n");
+        printf("@@RESULT FAIL reason=stream\n");
+        fflush(stdout);
+        return;
+    }
+    printf("@@CHECK stream=OK port=80 fps=%d\n", CONFIG_APP_CAPTURE_STREAM_FPS);
+
+    printf("@@RESULT PASS\n");
+    fflush(stdout);
+    ESP_LOGI(TAG, "capture running — browse http://%s/", app_wifi_ap_ip());
+}
+#endif
 
 void app_main(void)
 {
@@ -136,6 +181,12 @@ void app_main(void)
     printf("@@BOOT fw=%s ver=%s idf=%s built=%s_%s\n", app->project_name, app->version,
            esp_get_idf_version(), app->date, app->time);
 
+#if CONFIG_APP_MODE_CAPTURE
+    run_capture_mode();
+    while (true) {
+        vTaskDelay(pdMS_TO_TICKS(5000));
+    }
+#else
     bool ok = run_selftest();
 
     printf("@@HEAP internal_free=%u psram_free=%u min_internal=%u\n",
@@ -152,4 +203,5 @@ void app_main(void)
     while (true) {
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
+#endif
 }

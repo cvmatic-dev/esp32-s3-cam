@@ -51,3 +51,16 @@
   ambient (RGB LED) lighting, or a missing/ineffective IR-cut filter.
   **Needs a human:** aim the camera at white paper under neutral white light
   (or check the lens for an IR-cut filter) to tell the two apart.
+- **2026-10-29** — Capture utility (`make capture`) verified on hardware:
+  1280×720 **grayscale** (OV5640 ISP "grayscale" effect, U=V=0x80 — confirmed
+  true R≈G≈B, no magenta), manual exposure 1/32 s (`lines=578`, `trow_ns≈54076`),
+  `aec=0 agc=0 awb=0`, **~25 fps**, ~22 KB/frame, SD recording keeping up
+  (~25 fps to one sequential `video.mjpeg`). SoftAP `esp32cam` at 192.168.4.1,
+  MJPEG stream at 5 fps.
+  - The **ESP32-S3 has no hardware JPEG encoder** (only ROM JPEG *decode*), so
+    grayscale JPEG comes from the *sensor*, not an on-chip encoder.
+  - `720p@25` is at the pipeline limit: the driver's default HD timing gives
+    ~24.2 fps and shortening VTS to force 25 trips `FB-OVF` (DVP/PSRAM overrun),
+    so the utility runs at the native rate (~24–25 fps) rather than forcing VTS.
+  - Per-frame SD files cost ~60 ms each (FAT32), capping the card at ~15 fps;
+    a single sequential `.mjpeg` reaches ~25 fps.

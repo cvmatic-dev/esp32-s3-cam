@@ -3,7 +3,7 @@
 SHELL := /bin/bash
 ENV   := . scripts/env.sh &&
 
-.PHONY: help build flash test observe monitor-interactive ports reconfigure \
+.PHONY: help build flash test capture observe monitor-interactive ports reconfigure \
         menuconfig size clean fullclean format debug-gdb
 
 help:            ## list targets
@@ -17,6 +17,10 @@ flash: build     ## build + flash (holds port lock)
 
 test:            ## build + flash + reset + run self-test -> exit code, build/hw/*
 	@scripts/test_hw.sh
+
+capture:         ## build + flash + run the capture/stream utility (720p grey -> SD + WiFi MJPEG)
+	@rm -f sdkconfig
+	@SDKCONFIG_DEFAULTS="sdkconfig.defaults;scripts/sdkconfig.capture" scripts/test_hw.sh
 
 observe:         ## reset and watch the running firmware (no build/flash)
 	@NO_FLASH=1 scripts/test_hw.sh
