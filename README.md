@@ -52,7 +52,8 @@ make capture        # build + flash + run it
 - **Recording:** `/sdcard/cap/run_NNN/video.mjpeg` — concatenated grayscale JPEG
   frames. One sequential file (not one file per frame): per-file writes on FAT32
   cost ~60 ms each and cap the card at ~15 fps; sequential puts it at ~25 fps.
-  Split on `FFD8`/`FFD9` on the PC, or open directly with ffmpeg.
+  See `docs/playing-video.md` for the ffmpeg/ffplay commands to play it or pull
+  out individual frames.
 - Measured on this N16R8 board: **~25 fps** at 1280×720, ~22 KB/frame,
   `aec=0 agc=0 awb=0`. Reported in the `@@CHECK camera/exposure/wifi/stream`
   lines and a `@@STATS` line every 5 s.

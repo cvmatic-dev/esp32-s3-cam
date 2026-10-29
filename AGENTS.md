@@ -77,6 +77,7 @@ main/idf_component.yml + dependencies.lock   pinned managed components
 tools/esp_monitor.py non-interactive monitor / verdict / image extraction
 scripts/*.sh         build / flash / test_hw / env / setup_host
 docs/hardware.md     board facts, verified pin map, known quirks
+docs/playing-video.md  ffmpeg/ffplay commands for the capture utility's video.mjpeg
 docs/decisions/      ADRs (why ESP-IDF, etc.)
 ```
 
