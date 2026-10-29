@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -66,6 +67,7 @@ static volatile int s_copy_us;
 static FILE *s_sd_file;
 static int s_sd_saved;
 static char s_run_dir[64];
+static char s_sd_path[96];
 
 /* ------------------------------------------------------------------ sensor */
 
@@ -176,14 +178,18 @@ static void capture_task(void *arg)
         }
 
 #if CONFIG_APP_CAPTURE_SAVE_SD
-        /* Append straight from the camera buffer (valid until fb_return). One
-         * sequential .mjpeg file: per-frame files cost ~60 ms each on FAT32,
-         * which caps SD at ~15 fps. */
+        /* Append straight from the camera buffer (valid until fb_return), to
+         * ONE sequential .mjpeg file: per-frame files cost ~60 ms each on
+         * FAT32, which caps SD at ~15 fps. */
         if (s_sd_file) {
             int64_t c0 = esp_timer_get_time();
             if (fwrite(fb->buf, 1, fb->len, s_sd_file) == fb->len) {
+                /* fflush pushes bytes to the driver but FATFS only writes the
+                 * directory entry (file size) on fsync/close — without it the
+                 * file reads back as 0 bytes until closed. */
                 if (++s_sd_saved % 25 == 0) {
                     fflush(s_sd_file);
+                    fsync(fileno(s_sd_file));
                 }
             } else {
                 s_sd_drops++;
@@ -202,9 +208,11 @@ static void capture_task(void *arg)
             win_frames = 0;
             win_start = now;
             if (++secs % 5 == 0) {
-                printf("@@STATS capture_fps_x10=%d sd_saved=%d sd_drops=%d jpeg_kb=%u sd_ms=%d\n",
-                       s_fps_x10, s_sd_saved, s_sd_drops, (unsigned)(s_latest_len / 1024),
-                       s_copy_us / 1000);
+                struct stat st;
+                long disk_kb = (s_sd_file && stat(s_sd_path, &st) == 0) ? (long)(st.st_size / 1024) : -1;
+                printf("@@STATS capture_fps_x10=%d sd_saved=%d disk_kb=%ld sd_drops=%d jpeg_kb=%u sd_ms=%d\n",
+                       s_fps_x10, s_sd_saved, disk_kb, s_sd_drops,
+                       (unsigned)(s_latest_len / 1024), s_copy_us / 1000);
                 fflush(stdout);
             }
         }
@@ -310,10 +318,9 @@ esp_err_t app_capture_start(void)
     if (app_sd_mounted()) {
         make_run_dir();
 #if CONFIG_APP_CAPTURE_SAVE_SD
-        char path[96];
-        snprintf(path, sizeof(path), "%s/video.mjpeg", s_run_dir);
-        s_sd_file = fopen(path, "wb");
-        ESP_LOGI(TAG, "recording to %s", path);
+        snprintf(s_sd_path, sizeof(s_sd_path), "%s/video.mjpeg", s_run_dir);
+        s_sd_file = fopen(s_sd_path, "wb");
+        ESP_LOGI(TAG, "recording to %s", s_sd_path);
 #endif
     }
 

@@ -64,3 +64,6 @@
     so the utility runs at the native rate (~24–25 fps) rather than forcing VTS.
   - Per-frame SD files cost ~60 ms each (FAT32), capping the card at ~15 fps;
     a single sequential `.mjpeg` reaches ~25 fps.
+  - FATFS only commits the directory entry (file size) on `fsync`/`close`, so
+    `fflush` alone leaves the file reading back as **0 bytes**; the writer
+    `fsync`s every 25 frames (verified: `disk_kb` grows in `@@STATS`).
