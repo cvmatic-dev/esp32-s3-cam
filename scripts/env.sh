@@ -3,7 +3,7 @@
 # Source me:  . scripts/env.sh
 # Activates the pinned ESP-IDF. Idempotent and quiet. Safe for agents.
 
-ESP_IDF_VERSION_PIN="${ESP_IDF_VERSION_PIN:-v5.5.2}"
+ESP_IDF_VERSION_PIN="${ESP_IDF_VERSION_PIN:-v6.0.3}"
 export ESP_IDF_VERSION_PIN
 : "${IDF_PATH:=$HOME/esp/esp-idf-${ESP_IDF_VERSION_PIN}}"
 export IDF_PATH
