@@ -36,7 +36,11 @@ board is only reachable there.
 A second app mode (`CONFIG_APP_MODE_CAPTURE`) for collecting video for analysis:
 720p **grayscale**, fixed manual exposure (**1/32 s**), with AEC, AGC, AWB and
 the 50/60 Hz banding filter all **off**. It records to SD and serves a live MJPEG
-preview. The boot self-test stays the default mode.
+preview.
+
+The self-test is the Kconfig default; `make capture` selects capture mode in the
+generated `sdkconfig`. To go back to the self-test, run `make reconfigure` (which
+regenerates `sdkconfig` from `sdkconfig.defaults`).
 
 ```bash
 make capture        # build + flash + run it

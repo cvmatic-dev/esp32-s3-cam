@@ -18,6 +18,8 @@ flash: build     ## build + flash (holds port lock)
 test:            ## build + flash + reset + run self-test -> exit code, build/hw/*
 	@scripts/test_hw.sh
 
+# Selects capture mode in sdkconfig (regenerate with `make reconfigure` to
+# return to the self-test default).
 capture:         ## build + flash + run the capture/stream utility (720p grey -> SD + WiFi MJPEG)
 	@rm -f sdkconfig
 	@SDKCONFIG_DEFAULTS="sdkconfig.defaults;scripts/sdkconfig.capture" scripts/test_hw.sh
