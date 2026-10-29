@@ -1,0 +1,50 @@
+menu "App (esp32s3-cam)"
+
+    choice APP_FRAMESIZE
+        prompt "Capture frame size (JPEG)"
+        default APP_FRAMESIZE_SVGA
+        config APP_FRAMESIZE_QVGA
+            bool "QVGA 320x240"
+        config APP_FRAMESIZE_VGA
+            bool "VGA 640x480"
+        config APP_FRAMESIZE_SVGA
+            bool "SVGA 800x600"
+        config APP_FRAMESIZE_HD
+            bool "HD 1280x720"
+        config APP_FRAMESIZE_UXGA
+            bool "UXGA 1600x1200"
+        config APP_FRAMESIZE_QSXGA
+            bool "QSXGA 2560x1920 (stills only)"
+    endchoice
+
+    config APP_JPEG_QUALITY
+        int "JPEG quality (0-63, lower = better)"
+        range 4 63
+        default 12
+
+    config APP_SELFTEST_FRAMES
+        int "Frames captured by the boot self-test"
+        range 1 100
+        default 5
+
+    config APP_WARMUP_FRAMES
+        int "Frames discarded before measuring (AEC/AWB settle)"
+        range 0 30
+        default 3
+
+    config APP_REQUIRE_SD
+        bool "Self-test fails if the SD card does not mount"
+        default y
+
+    config APP_SAVE_TO_SD
+        bool "Save self-test frames to SD card"
+        default y
+
+    config APP_SERIAL_DUMP
+        bool "Dump last self-test frame over serial (base64, @@IMG markers)"
+        default y
+        help
+            Lets a coding agent on the host see the actual image:
+            tools/esp_monitor.py --save-images <dir> decodes it to a .jpg.
+
+endmenu

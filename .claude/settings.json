@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make build)",
+      "Bash(make flash)",
+      "Bash(make test)",
+      "Bash(make observe)",
+      "Bash(make ports)",
+      "Bash(make reconfigure)",
+      "Bash(make size)",
+      "Bash(make clean)",
+      "Bash(scripts/build.sh:*)",
+      "Bash(scripts/flash.sh:*)",
+      "Bash(scripts/test_hw.sh:*)",
+      "Bash(SKIP_BUILD=1 scripts/test_hw.sh:*)",
+      "Bash(NO_FLASH=1 scripts/test_hw.sh:*)",
+      "Bash(TIMEOUT=* scripts/test_hw.sh:*)",
+      "Bash(python3 tools/esp_monitor.py:*)",
+      "Bash(idf.py build:*)",
+      "Bash(idf.py size:*)",
+      "Bash(idf.py add-dependency:*)",
+      "Read(build/**)"
+    ],
+    "ask": [
+      "Bash(idf.py erase-flash:*)",
+      "Bash(esptool.py:*)",
+      "Bash(make fullclean)",
+      "Bash(scripts/setup_host.sh:*)"
+    ],
+    "deny": [
+      "Bash(espefuse.py:*)",
+      "Bash(espefuse:*)",
+      "Bash(idf.py efuse:*)",
+      "Bash(idf.py efuse-burn:*)",
+      "Bash(idf.py efuse-burn-key:*)",
+      "Bash(idf.py efuse-write-protect:*)",
+      "Bash(espsecure.py:*)",
+      "Bash(espsecure:*)",
+      "Bash(sudo:*)"
+    ]
+  }
+}

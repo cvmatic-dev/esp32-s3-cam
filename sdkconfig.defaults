@@ -1,0 +1,49 @@
+# Source of truth for configuration. `sdkconfig` is generated and git-ignored.
+# After editing this file run:  make reconfigure
+# (Never hand-edit `sdkconfig`; never commit it.)
+
+CONFIG_IDF_TARGET="esp32s3"
+
+# ---- Flash ------------------------------------------------------------------
+# 8MB is safe for N8R8 and N16R8 modules. On N16R8 you may switch to 16MB.
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+CONFIG_ESPTOOLPY_FLASHSIZE_8MB=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# ---- PSRAM (required for OV5640 frames above CIF) ---------------------------
+# Most ESP32-S3-CAM boards use N8R8/N16R8 modules = OCTAL PSRAM.
+# If boot logs show "PSRAM ID read error" / boot loop, your module has QUAD
+# PSRAM: replace SPIRAM_MODE_OCT with CONFIG_SPIRAM_MODE_QUAD=y.
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+CONFIG_SPIRAM_USE_MALLOC=y
+
+# ---- CPU / RTOS -------------------------------------------------------------
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+CONFIG_FREERTOS_HZ=1000
+
+# ---- Console ----------------------------------------------------------------
+# Logs go to UART0 (CH34x "COM" port) AND the native USB-Serial-JTAG port.
+CONFIG_ESP_CONSOLE_UART_DEFAULT=y
+CONFIG_ESP_CONSOLE_SECONDARY_USB_SERIAL_JTAG=y
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+# No ANSI colour codes: logs are read by machines.
+CONFIG_LOG_COLORS=n
+
+# ---- Agent-friendly crash behaviour -----------------------------------------
+# Print backtrace and HALT (no reboot loop flooding the log).
+CONFIG_ESP_SYSTEM_PANIC_PRINT_HALT=y
+CONFIG_ESP_TASK_WDT_PANIC=y
+CONFIG_FREERTOS_CHECK_STACKOVERFLOW_CANARY=y
+CONFIG_COMPILER_STACK_CHECK_MODE_NORM=y
+
+# ---- FATFS on SD ------------------------------------------------------------
+CONFIG_FATFS_LFN_HEAP=y
+CONFIG_FATFS_MAX_LFN=255
+
+# ---- Camera driver (espressif/esp32-camera) ---------------------------------
+CONFIG_OV5640_SUPPORT=y
+CONFIG_CAMERA_CORE0=y

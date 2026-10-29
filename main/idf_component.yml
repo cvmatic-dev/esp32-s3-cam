@@ -1,0 +1,5 @@
+## Managed components (downloaded to managed_components/ on first build).
+## Lock file dependencies.lock IS committed so builds are reproducible.
+dependencies:
+  idf: ">=5.4"
+  espressif/esp32-camera: "^2.1.0"

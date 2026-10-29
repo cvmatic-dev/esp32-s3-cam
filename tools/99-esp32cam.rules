@@ -1,0 +1,20 @@
+# Stable device names for the ESP32-S3-CAM on dellws.
+# Install:  sudo cp tools/99-esp32cam.rules /etc/udev/rules.d/ && sudo udevadm control --reload && sudo udevadm trigger
+#
+# /dev/esp32cam-jtag : native USB (USB-Serial-JTAG, 303a:1001) — flashing, logs, JTAG debug
+# /dev/esp32cam-uart : UART bridge on the "COM" USB-C (CH343 / CH340 / CP210x)
+#
+# If several ESP32 boards are attached, pin by serial number, e.g.
+#   ATTRS{serial}=="F4:12:FA:xx:xx:xx"   (see: udevadm info -a /dev/ttyACM0 | grep serial)
+
+SUBSYSTEM=="tty", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", SYMLINK+="esp32cam-jtag", MODE="0660", GROUP="dialout"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d3", SYMLINK+="esp32cam-uart", MODE="0660", GROUP="dialout"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="7523", SYMLINK+="esp32cam-uart", MODE="0660", GROUP="dialout"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+="esp32cam-uart", MODE="0660", GROUP="dialout"
+
+# OpenOCD access to the built-in JTAG (no sudo needed for `make debug`)
+SUBSYSTEM=="usb", ATTR{idVendor}=="303a", ATTR{idProduct}=="1001", MODE="0660", GROUP="plugdev"
+
+# Stop ModemManager probing the port (it can steal it mid-flash)
+ATTRS{idVendor}=="303a", ENV{ID_MM_DEVICE_IGNORE}="1"
+ATTRS{idVendor}=="1a86", ENV{ID_MM_DEVICE_IGNORE}="1"
