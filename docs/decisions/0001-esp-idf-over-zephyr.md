@@ -1,13 +1,13 @@
 # ADR 0001 — ESP-IDF (FreeRTOS) instead of Zephyr
 
-Status: accepted · 2026-10-29
+Status: accepted · 2026-10-29 (amended: IDF v6.0.3, see Consequences)
 
 ## Context
 Target: ESP32-S3 + OV5640 (DVP) + microSD, image capture/streaming, developed
 mostly by coding agents on a host with the board attached over USB.
 
 ## Decision
-Use ESP-IDF v5.5.x (FreeRTOS kernel) with the `espressif/esp32-camera`
+Use ESP-IDF v6.0.3 (FreeRTOS kernel) with the `espressif/esp32-camera`
 managed component.
 
 ## Why
@@ -37,3 +37,6 @@ managed component.
   directly; no portability layer.
 - Revisit when moving to ESP-IDF v6.x (removes some legacy drivers; check
   `esp32-camera` compatibility first).
+- **Amendment (2026-10-29):** moved to ESP-IDF v6.0.3. `esp32-camera` 2.1.8
+  builds and runs on v6.0.3 — camera probe, JPEG frames and the boot
+  self-test all pass on the real board (`build/hw/result.json` verdict PASS).

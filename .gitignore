@@ -6,4 +6,5 @@ sdkconfig.old
 __pycache__/
 .cache/
 .vscode/
+.commandcode/
 # dependencies.lock is intentionally NOT ignored (reproducible component versions)

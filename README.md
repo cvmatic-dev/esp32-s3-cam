@@ -1,6 +1,6 @@
 # esp32s3-cam
 
-ESP32-S3-CAM + OV5640 + microSD firmware on **ESP-IDF v5.5 (FreeRTOS)**,
+ESP32-S3-CAM + OV5640 + microSD firmware on **ESP-IDF v6.0.3 (FreeRTOS)**,
 set up so coding agents (Claude Code, Codex, etc.) can build, flash and
 verify on real hardware without a human in the loop.
 
@@ -8,7 +8,7 @@ verify on real hardware without a human in the loop.
 
 ```bash
 git init && git add -A && git commit -m "scaffold"
-scripts/setup_host.sh          # apt deps, udev rules, dialout group, ESP-IDF v5.5.2
+scripts/setup_host.sh          # apt deps, udev rules, dialout group, ESP-IDF v6.0.3
 # log out / in once (group change)
 ```
 
